@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009"
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:esri="http://www.esri.com/2008/ags"
+		title="A tiled map service"
+		actionBarVisible="false"
+		viewActivate="invalidateMapContents()">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.ExtentEvent;
+			import com.esri.ags.events.MapEvent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			import com.esri.ags.utils.WebMercatorUtil;
+			
+			import flash.sensors.Geolocation;
+			
+			import model.VehiclesModel;
+			import model.vo.Vehicle;
+			
+			import mx.events.FlexEvent;
+			
+			import spark.events.ViewNavigatorEvent;
+			
+			import views.map.VehicleGraphic;
+			
+			
+			[Bindable]
+			[Inject]
+			public var vehiclesModel : VehiclesModel;
+			
+			[Embed(source="/assets/images/gpsA.png")]
+			private var m_gpsA:Class;
+			[Embed(source="/assets/images/gpsB.png")]
+			private var m_gpsB:Class;
+			
+			private var geo:Geolocation;
+			private var currentLocation:MapPoint;
+			private var markersInitialized : Boolean = false;
+			
+			protected function myMap_loadHandler(event:MapEvent):void
+			{
+				if (Geolocation.isSupported)
+				{
+					geo = new Geolocation;
+					if (!geo.muted) 
+					{
+						zoomToCurrentLocationImg.source = m_gpsA;
+						zoomToCurrentLocationImg.visible = true;
+					}
+				}
+			}
+			
+			protected function zoomToCurrentLocation_clickHandler(event:MouseEvent):void
+			{
+				if (myGraphicsLayer.numGraphics > 0)
+				{
+					myGraphicsLayer.clear();
+					zoomToCurrentLocationImg.source = m_gpsA;
+				}
+				else
+				{
+					zoomToCurrentLocationImg.source = m_gpsB;
+					geo.addEventListener(GeolocationEvent.UPDATE, onUpdate);
+				}
+			}
+			
+			private function onUpdate(event:GeolocationEvent):void
+			{
+				geo.removeEventListener(GeolocationEvent.UPDATE, onUpdate);
+				
+				// convert the longitude and lagitude values to web mercator as the basemap is in web mercator
+				currentLocation = 
+					WebMercatorUtil.geographicToWebMercator(
+						new MapPoint(event.longitude, event.latitude) ) as MapPoint;
+				myMap.centerAt(currentLocation);
+				myMap.level = 16;
+				
+				var graphic:Graphic = new Graphic(currentLocation);
+				myGraphicsLayer.add(graphic);
+			}
+			
+			protected function updateMapGraphics(): void
+			{
+				if ( vehiclesGraphicLayer && vehiclesModel )
+				{
+					vehiclesGraphicLayer.clear();
+					for each ( var vehicle : Vehicle in vehiclesModel.vehicles )
+					{
+						var vehicleGraphic:Graphic = new VehicleGraphic( vehicle );
+						vehiclesGraphicLayer.add( vehicleGraphic );
+					}
+					markersInitialized = true;
+				}
+			}
+			
+			override protected function commitProperties() : void
+			{
+				super.commitProperties();
+				if ( !markersInitialized )
+					updateMapGraphics();
+			}
+			
+			[PostConstruct]
+			public function invalidateMapContents() : void
+			{
+				invalidateProperties();
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<!-- Map Control -->
+	<esri:Map id="myMap"
+			  level="3"
+			  load="myMap_loadHandler(event)"
+			  wrapAround180="true"
+			  zoomSliderVisible="false">
+		<esri:extent>
+			<esri:Extent 
+				xmin="-19325128.942" ymin="-10948057.675" 
+				xmax="-539964.871" ymax="18364625.427">
+				<esri:SpatialReference wkid="102100"/>
+			</esri:Extent>
+		</esri:extent>
+		<esri:ArcGISTiledMapServiceLayer 
+			url="http://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer"/>
+		<esri:GraphicsLayer 
+			id="vehiclesGraphicLayer" 
+			creationComplete="updateMapGraphics();" />
+		<esri:GraphicsLayer 
+			id="myGraphicsLayer" 
+			symbol="{new PictureMarkerSymbol}"/>
+	</esri:Map>
+	
+	<s:Image id="zoomToCurrentLocationImg"
+			 top="10" right="10"
+			 click="zoomToCurrentLocation_clickHandler(event)"
+			 visible="false"/>
+</s:View>

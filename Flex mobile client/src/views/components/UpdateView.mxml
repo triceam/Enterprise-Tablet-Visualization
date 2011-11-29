@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="Realtime Updates"
+		actionBarVisible="false"
+		initialize="onInitialize()">
+	
+	<fx:Script>
+		<![CDATA[
+			import model.VehiclesModel;
+			import model.vo.VehicleUpdate;
+			
+			import mx.formatters.DateFormatter;
+			
+			[Bindable]
+			[Inject]
+			public var vehiclesModel : VehiclesModel;
+			
+			private static var df : DateFormatter = new DateFormatter()
+			
+			private function onInitialize() : void
+			{
+				df.formatString = "HH:NN:SS";
+			}
+				
+			private function labelFunction(item:Object):String 
+			{
+				var update : VehicleUpdate = item as VehicleUpdate;
+				return update.longitude.toString() + ", " + update.latitude.toString();
+			}
+		]]>
+	</fx:Script>
+	
+	<s:List width="100%" height="100%"
+			dataProvider="{ vehiclesModel.messages }"
+			labelFunction="labelFunction" />
+	
+</s:View>

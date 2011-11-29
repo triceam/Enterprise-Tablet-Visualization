@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="Dashboard"
+		addedToStage="onAddedToStage(event)" 
+		xmlns:views="views.*"
+		destructionPolicy="never">
+	
+	<fx:Script>
+		<![CDATA[
+			import events.VehicleEvent;
+			
+			import mx.core.FlexGlobals;
+			import mx.events.FlexEvent;
+			
+			import views.components.UpdateView;
+			
+			protected function onAddedToStage(event:Event):void
+			{
+				var _width : Number = Math.max( stage.stageWidth, stage.stageHeight );
+				var _height : Number = Math.min( stage.stageWidth, stage.stageHeight );
+				
+				_width = _width / FlexGlobals.topLevelApplication.applicationDPI;
+				_height = _height / FlexGlobals.topLevelApplication.applicationDPI;
+				
+				//this will resolve to the physical size in inches... if greater than 5 inches, assume its a tablet
+				if ( _width >= 5 )
+					currentState = "tablet";
+				else
+					currentState = "phone";
+			}
+			
+			
+			
+			[EventHandler( event="VehicleEvent.VEHICLE_SELECT" )]
+			public function vehicleSelect( event : VehicleEvent ) : void
+			{
+				navigator.pushView( VehicleDetailView, event.vehicle );
+			}
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="tablet" />
+		<s:State name="phone" />
+	</s:states>
+	
+	<views:PhoneView includeIn="phone" 
+					 width="100%" height="100%" />
+	
+	<views:TabletView includeIn="tablet" 
+					  width="100%" height="100%" />
+	
+</s:View>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:IconItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009" 
+					xmlns:s="library://ns.adobe.com/flex/spark"  
+					iconWidth="32" iconHeight="32"
+					iconFunction="getIcon"
+					labelFunction="getLabel"
+					>
+	
+	<fx:Script>
+		<![CDATA[
+			import model.vo.Vehicle;
+			
+			import spark.formatters.NumberFormatter;
+			
+			import views.map.VehicleRendererConstants;
+			
+			private var matrix : Matrix = new Matrix();
+			private var iconBitmap:BitmapData = new BitmapData(32, 32);
+			private var rect: Rectangle = new Rectangle(0,0,32,32);
+			private var lastDirection : Number;
+			private var nf : NumberFormatter = new NumberFormatter();
+			
+			private function getIcon(item:Object):* 
+			{ 
+				var vehicle : Vehicle = item as Vehicle;
+				
+				if (lastDirection == vehicle.direction)
+					return iconBitmap;
+				
+				matrix.identity();
+				matrix.translate(-16,-16);
+				matrix.rotate(Math.PI * vehicle.direction / 180);
+				matrix.translate(16,16);
+				
+				var source : Bitmap = (vehicle.direction >= 0 && vehicle.direction < 180) ? VehicleRendererConstants.RED_ICON : VehicleRendererConstants.GREEN_ICON;
+				
+				iconBitmap.fillRect( rect, 0x00000000 );
+				iconBitmap.draw( source, matrix );
+				
+				return iconBitmap; 
+			} 
+			
+			private function getLabel(item:Object):String
+			{ 
+				nf.fractionalDigits = 3;
+				
+				var vehicle : Vehicle = item as Vehicle;
+			
+				return vehicle.name + "    lon:" + nf.format( vehicle.longitude ) + ", lat:" + nf.format( vehicle.latitude );
+			}
+		]]>
+	</fx:Script>
+	
+</s:IconItemRenderer>

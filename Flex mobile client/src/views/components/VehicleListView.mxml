@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" 
+		title="VehicleListView"
+		actionBarVisible="false" 
+		currentState="vertical">
+	
+	<fx:Script>
+		<![CDATA[
+			import events.VehicleEvent;
+			
+			import model.VehiclesModel;
+			import model.vo.Vehicle;
+			
+			import spark.events.IndexChangeEvent;
+			import spark.layouts.TileLayout;
+			import spark.layouts.VerticalLayout;
+			
+			[Bindable]
+			[Inject]
+			public var vehiclesModel : VehiclesModel;
+			
+			[Dispatcher]
+			public var dispatcher:IEventDispatcher;
+			
+			protected function list1_changeHandler(event:IndexChangeEvent):void
+			{
+				if ( list.selectedItem )
+					dispatcher.dispatchEvent( new VehicleEvent( VehicleEvent.VEHICLE_SELECT, list.selectedItem as Vehicle ) );
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:states>
+		<s:State name="vertical" />
+		<s:State name="tile" />
+	</s:states>
+	
+	<s:List id="list"
+			width="500%" height="100%"
+			dataProvider="{ vehiclesModel.vehicles }"
+			labelField="name" 
+			itemRenderer="views.itemRenderers.VehicleListItemRenderer"
+			change="list1_changeHandler(event)">
+		
+		<s:layout>
+			<s:TileLayout id="tileLayout" 
+						  requestedColumnCount.vertical="1"
+						  requestedColumnCount.tile="2" 
+						  horizontalGap="0" verticalGap="0"
+						  columnWidth.vertical="{ width }"
+						  columnWidth.tile="{ width/2 }"/>
+		</s:layout>
+		
+	</s:List>
+	
+</s:View>

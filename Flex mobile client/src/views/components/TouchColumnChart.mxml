@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:ColumnChart xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 creationComplete="onCreationComplete(event)"
+				 showDataTips="true" 
+				 selectionMode="single"
+				 dragEnabled="true" 
+				 dropEnabled="false"
+				 mouseDown="mouseDownHandler(event)"
+				 seriesFilters="{[]}">
+	
+	<fx:Script>
+		<![CDATA[ 
+			import flash.utils.setTimeout;
+			
+			import mx.charts.ChartItem;
+			import mx.charts.Legend;
+			import mx.charts.PieChart;
+			import mx.charts.chartClasses.ChartBase;
+			import mx.charts.events.ChartItemEvent;
+			import mx.charts.series.PieSeries;
+			import mx.collections.ArrayCollection;
+			import mx.core.DragSource;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+			
+			protected var lastX:Number = 0;
+			
+			[Bindable] 
+			protected var viewportMax:Number = 10;	
+			
+			[Bindable]
+			public var newDataProviderAC:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var explodedPiece:Array;
+			
+
+			protected function onCreationComplete(event : Event):void
+			{
+				this.addEventListener( TransformGestureEvent.GESTURE_ZOOM, onChartGestureZoom );
+				
+				setTimeout( simulateData, 2000 );
+			}
+			
+			protected function simulateData() : void
+			{
+				// Simulate values
+				var results:Array = [];
+				for (var i:int=0; i<100; i++)
+				{
+					results[i] = Math.random() * 100;
+				}
+				this.dataProvider = new ArrayCollection(results);
+			}
+			
+			protected function mouseDownHandler(event:MouseEvent):void
+			{
+				removeEventListener( Event.ENTER_FRAME, onEnterFrame );
+				if ( event.target is ColumnSeries )
+					return;
+				
+				lastX = event.stageX;
+				systemManager.addEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+				systemManager.addEventListener(MouseEvent.MOUSE_UP, mouseUpHandler);
+			}
+			
+			protected function mouseMoveHandler(event:MouseEvent):void
+			{
+				var delta:Number = (lastX - event.stageX) / width * viewportMax;
+				if ( Math.abs( delta ) > 0 )
+				{
+					updatePosition( delta );
+					lastX = event.stageX;
+					velocity = delta;
+				}
+			}
+			
+			protected function updatePosition( delta : Number ) : void
+			{
+				if ( dataProvider == null )
+					return;
+				
+				if (hAxis.minimum + delta < 0)
+				{
+					hAxis.minimum = 0;
+					hAxis.maximum = viewportMax;
+				}
+				else if (hAxis.maximum + delta  > dataProvider.length - 1)
+				{
+					hAxis.maximum = dataProvider.length - 1;
+					hAxis.minimum = hAxis.maximum - viewportMax;
+				}
+				else
+				{
+					hAxis.minimum += delta;
+					hAxis.maximum += delta;
+				}
+			}
+			
+			protected function mouseUpHandler(event:MouseEvent):void
+			{
+				systemManager.removeEventListener(MouseEvent.MOUSE_MOVE, mouseMoveHandler);
+				systemManager.removeEventListener(MouseEvent.MOUSE_MOVE, mouseUpHandler);
+				
+				if ( Math.abs(velocity) > minVelocity )
+					addEventListener( Event.ENTER_FRAME, onEnterFrame );
+			}
+			
+			protected function onChartGestureZoom( event : TransformGestureEvent ) : void
+			{
+				var targetViewPortMax : Number = viewportMax / event.scaleX;
+				
+				targetViewPortMax = Math.min( targetViewPortMax, dataProvider.length );
+				
+				viewportMax = Math.max( targetViewPortMax, hAxis.minimum+2 );
+				event.stopPropagation();
+			}
+			
+			protected function onEnterFrame( event : Event ) : void
+			{
+				velocity *= decay;
+				updatePosition( velocity );
+				
+				if ( Math.abs(velocity) < minVelocity )
+					removeEventListener( Event.ENTER_FRAME, onEnterFrame );
+			}
+			
+			private var velocity : Number = 0;
+			private var decay : Number = 0.9;
+			private var minVelocity : Number = 0.2;
+		]]> 
+	</fx:Script>   
+	
+	<fx:Declarations>
+		<mx:SolidColorStroke color="0x333333" weight="2" id="axis"/>
+		<mx:SolidColorStroke color="0x333333" weight="1" id="ticks"/>
+	</fx:Declarations>
+	
+	<mx:backgroundElements>
+		
+		<fx:Array id="bge">
+			<mx:GridLines gridDirection="both">
+				<mx:horizontalStroke>
+					<mx:SolidColorStroke weight="1" color="#333333"/>
+				</mx:horizontalStroke>
+				<mx:verticalStroke>
+					<mx:SolidColorStroke weight="1" color="#333333"/>
+				</mx:verticalStroke>
+			</mx:GridLines>
+		</fx:Array>
+	</mx:backgroundElements>
+	
+	<mx:series>
+		<mx:ColumnSeries id="series1" 
+						 displayName="Per Trip Mileage (k)" 
+						 selectable="true"
+						 filters="{[]}"
+						 /> 
+	</mx:series>       
+	
+	<mx:horizontalAxis>
+		<mx:LinearAxis id="hAxis" minimum="0" maximum="{viewportMax}"/>
+	</mx:horizontalAxis>    
+	<mx:verticalAxis>
+		<mx:LinearAxis id="vAxis" />
+	</mx:verticalAxis>    
+	
+	<mx:horizontalAxisRenderers>
+		<mx:AxisRenderer
+			axis="{hAxis}"
+			axisStroke="{axis}">
+			<mx:tickStroke>{ticks}</mx:tickStroke>
+			<mx:minorTickStroke>{ticks}</mx:minorTickStroke>
+		</mx:AxisRenderer>
+	</mx:horizontalAxisRenderers>
+	
+	<mx:verticalAxisRenderers>
+		<mx:AxisRenderer
+			axis="{vAxis}"
+			axisStroke="{axis}">
+			<mx:tickStroke>{ticks}</mx:tickStroke>
+			<mx:minorTickStroke>{ticks}</mx:minorTickStroke>
+		</mx:AxisRenderer>
+	</mx:verticalAxisRenderers>
+	
+	</mx:ColumnChart>

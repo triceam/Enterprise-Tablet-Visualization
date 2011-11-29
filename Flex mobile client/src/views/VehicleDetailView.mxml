@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark"
+				 title="{ data.name } Summary" 
+				 xmlns:views="views.*" xmlns:components="views.components.*"
+				 creationComplete="onCreationComplete(event)"
+				 destructionPolicy="never"
+				 currentState="default">
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import events.VehicleEvent;
+			
+			import model.vo.Vehicle;
+			
+			import mx.core.FlexGlobals;
+			
+			import views.components.ReportingView;
+			
+			[Dispatcher]
+			public var dispatcher:IEventDispatcher;
+			
+			protected function onCreationComplete(event:Event):void
+			{
+				var _width : Number = Math.max( stage.stageWidth, stage.stageHeight );
+				var _height : Number = Math.min( stage.stageWidth, stage.stageHeight );
+				
+				_width = _width / FlexGlobals.topLevelApplication.applicationDPI;
+				_height = _height / FlexGlobals.topLevelApplication.applicationDPI;
+				
+				//this will resolve to the physical size in inches... if greater than 5 inches, assume its a tablet
+				if ( _width >= 5 )
+					currentState = "tablet";
+				else
+					currentState = "phone";
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+			{
+				navigator.pushView( ReportingView, data );
+			}
+			
+			protected function chatButton_clickHandler(event:MouseEvent):void
+			{
+				navigator.pushView( CollaborationView, data );
+			}
+			
+		]]>
+	</fx:Script>
+			
+	
+	<s:navigationContent>
+		<fx:Array>
+			<s:Button label="Back" click="navigator.popView()" />
+		</fx:Array>
+	</s:navigationContent>
+	
+	<s:states>
+		<s:State name="default" />
+		<s:State name="tablet" />
+		<s:State name="phone" />
+	</s:states>
+	
+	<components:VehicleSummaryView id="summaryView" 
+									data="{ data }"
+									top="0" left="0"
+									right.phone="0" 
+									right.tablet="{ width/2 }"
+									minHeight="200" />
+	
+	
+	<components:VehicleMapView id="mapview"
+							  data="{ data }"
+							  top.phone="{ summaryView.height }" 
+							  top.tablet="0"
+							  right="0"
+							  left.phone="0" 
+							  left.tablet="{ width/2 }"
+							  height.phone="100%"
+							  height.tablet="{ summaryView.height }"
+							  excludeFrom="default"/>
+	
+	<s:Button label="Report"
+			  includeIn="phone"
+			  top="{ chatButton.height+25 }" right="10"
+			  click="button1_clickHandler(event)"
+			  width="{ chatButton.width }"/>
+	
+	<s:Button id="chatButton"
+			  label="Discuss"
+			  top="10"
+			  right="10" 
+			  click="chatButton_clickHandler(event)"/>
+	
+	<components:ReportingView includeIn="tablet"
+							  top="{ summaryView.height }" 
+							  left="0"
+							  right="0"
+							  bottom="0"
+							  />
+
+	
+</s:View>

@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:mx="library://ns.adobe.com/flex/mx" 
+				 title="{ data.name } Reporting"
+				 xmlns:components="views.components.*">
+	
+	<fx:Declarations>
+		<mx:SeriesInterpolate id="interpol" 
+							  duration="1000" 
+							  elementOffset="0" 
+							  minimumElementDuration="200"
+							  />
+	</fx:Declarations>
+		
+	<s:navigationContent>
+		<fx:Array>
+			<s:Button label="Dashboard" click="navigator.popView()" />
+		</fx:Array>
+	</s:navigationContent>
+	
+	<fx:Script>
+		<![CDATA[ 
+			import mx.charts.ChartItem;
+			import mx.charts.Legend;
+			import mx.charts.PieChart;
+			import mx.charts.chartClasses.ChartBase;
+			import mx.charts.events.ChartItemEvent;
+			import mx.charts.series.PieSeries;
+			import mx.collections.ArrayCollection;
+			import mx.core.DragSource;
+			import mx.events.DragEvent;
+			import mx.events.FlexEvent;
+			import mx.managers.DragManager;
+			
+			[Bindable]
+			public var newDataProviderAC:ArrayCollection = new ArrayCollection();
+			
+			[Bindable]
+			private var explodedPieces:Array;
+			
+			private function selectPieSeries(e:Event):void 
+			{
+				//explode the selected wedge(s)
+				explodedPieces = new Array();    
+				explodedPieces[pieSeries.selectedIndex] = .2;
+				pieSeries.perWedgeExplodeRadius = explodedPieces;
+				
+				//generate data from line chart dashboard
+				var ac : ArrayCollection = new ArrayCollection();
+				for ( var x:int=0; x<15; x++ )
+				{
+					var item : Object = new Object();
+					item.min = Math.random() * Number(ChartItem(pieSeries.selectedItem).item);
+					item.value = (Math.random() * 25) + item.min;
+					item.max = (Math.random() * 25) + item.value;
+					
+					ac.addItem(	item );
+				}
+				lineChartGroup.visible=true;
+				lineChartGroup.includeInLayout=true;
+				lineChart.dataProvider = ac;
+				
+			}
+			
+			private function doDragEnter(event:DragEvent):void 
+			{
+				var dragTarget:ChartBase = ChartBase(event.currentTarget);
+				DragManager.acceptDragDrop(dragTarget);
+			}
+			
+			private function doDragDrop(event:DragEvent):void 
+			{
+				var dropTarget:ChartBase=ChartBase(event.currentTarget);
+				
+				var items:Array = event.dragSource.dataForFormat("chartitems") as Array;
+				
+				for(var i:uint=0; i < items.length; i++) 
+				{
+					if (newDataProviderAC.contains(items[i].item)) 
+					{
+						// If the target data provider does NOT already
+						// contain the item, then add it.
+					} else {
+						newDataProviderAC.addItem(items[i].item);                
+					}                
+				}
+			}
+		]]> 
+	</fx:Script>   
+	
+	<s:layout>
+		<s:VerticalLayout paddingBottom="10" paddingLeft="10" paddingRight="10" paddingTop="10"/>
+	</s:layout>
+	
+	<components:TouchColumnChart
+		id="chart"
+		height="50%" 
+		width="100%" />
+	
+	
+	<s:Group height="50%" width="100%">
+		
+		<s:Group height="100%" width="100%" id="pieTarget">
+			<s:resizeEffect>
+				<s:Resize />
+			</s:resizeEffect>
+			
+			<s:Rect width="100%" height="100%" radiusX="25" radiusY="25">
+				<s:fill>
+					<s:SolidColor color="#EEEEEE" />
+				</s:fill>
+			</s:Rect>
+			<s:Label text="Drop Columns Here"
+					 left="15" top="15"
+					 visible="{ newDataProviderAC.length == 0 }" />
+			
+			<mx:PieChart id="pieChart"
+						 showDataTips="true"
+						 selectionMode="single"
+						 dragEnabled="true"
+						 dropEnabled="true"
+						 width="100%"
+						 height="100%"
+						 seriesFilters="{ [] }"
+						 dragEnter="doDragEnter(event)"
+						 dragDrop="doDragDrop(event)"
+						 dataProvider="{ newDataProviderAC }"
+						 change="selectPieSeries(event)" >
+				<mx:series>
+					<fx:Array>
+						<mx:PieSeries id="pieSeries" 
+									  showDataEffect="{ interpol }" 
+									  filters="{ [] }" />	
+					</fx:Array>
+				</mx:series>
+			</mx:PieChart>
+			
+		</s:Group>
+		
+		<s:Group height="100%" width="100%"
+				 id="lineChartGroup"
+				 visible="false"
+				 includeInLayout="false"
+				 showEffect="Fade" >
+			
+			<mx:LineChart
+				id="lineChart"
+				seriesFilters="{ [] }"
+				width="100%"
+				height="100%">
+				
+				<mx:series>
+					<fx:Array>
+						<mx:LineSeries yField="min" form="curve" displayName="Min Range"
+									   showDataEffect="{ interpol }"  />
+						<!--<mx:PlotSeries yField="value" displayName="Actual Value"
+									   showDataEffect="{ interpol }"  />-->
+						<mx:LineSeries yField="max" form="curve" displayName="Max Range"
+									   showDataEffect="{ interpol }"  />
+					</fx:Array>
+				</mx:series>
+			</mx:LineChart>
+		</s:Group>
+		
+		<s:layout>
+			<s:HorizontalLayout />
+		</s:layout>
+	</s:Group>
+	
+</s:View>

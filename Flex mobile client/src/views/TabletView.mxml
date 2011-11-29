@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark" title="TabletView" xmlns:views="views.*" 
+		xmlns:components="views.components.*"
+		addedToStage="addedToStageHandler(event)"
+		removedFromStage="removedFromStageHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import events.VehicleEvent;
+			
+			import views.components.UpdateView;
+			
+			
+			[Bindable]
+			private var halfWidth : Number = 0;
+			
+			[Bindable]
+			private var halfHeight : Number = 0;
+			
+			[Bindable]
+			private var quarterWidth : Number = 0;
+			
+			[Bindable]
+			private var quarterHeight : Number = 0;
+			
+			protected function addedToStageHandler(event:Event):void
+			{
+				updateOrientation(null);
+				stage.addEventListener( StageOrientationEvent.ORIENTATION_CHANGE, updateOrientation );
+			}
+			
+			protected function updateOrientation( event : StageOrientationEvent ) : void
+			{
+				callLater( invalidateProperties );
+			}
+			
+			protected function removedFromStageHandler(event:Event):void
+			{
+				stage.removeEventListener( StageOrientationEvent.ORIENTATION_CHANGE, updateOrientation );
+			}
+			
+			override protected function commitProperties() : void
+			{
+				super.commitProperties();
+				
+				if ( width > 0 && height > 0 )
+				{
+					this.currentState = (width > height ? "landscape" : "portrait");
+					halfWidth = width/2;
+					halfHeight = height/2;
+					quarterWidth = width/4;
+					quarterHeight = height/4;
+				}
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	
+	<s:states>
+		<s:State name="portrait" />
+		<s:State name="landscape" />
+	</s:states>
+	
+	
+	<components:VehicleListView 
+		top="0" left="0" 
+		right.portrait="0"
+		right.landscape="{ quarterWidth }"
+		bottom.portrait="{ quarterHeight }"
+		bottom.landscape="0"
+		currentState.landscape="vertical"
+		currentState.portrait="tile" />
+		
+	
+	<components:MapView
+		bottom="0" right="0" 
+		left.portrait="0"
+		left.landscape="{ quarterWidth }"
+		top.portrait="{ quarterHeight }"
+		top.landscape="0" />
+	
+	<s:Line top="0" 
+			left.portrait="{ halfWidth }"
+			left.landscape="{ quarterWidth }"
+			bottom.portrait="{ 3*quarterHeight }"
+			bottom.landscape="0">
+		<s:stroke>
+			<s:SolidColorStroke color="#666666" weight="1" />
+		</s:stroke>
+	</s:Line>
+	
+	<s:Line top="{ quarterHeight }" 
+			left="0" right="0"
+			includeIn="portrait">
+		<s:stroke>
+			<s:SolidColorStroke color="#666666" weight="1" />
+		</s:stroke>
+	</s:Line>
+</s:View>

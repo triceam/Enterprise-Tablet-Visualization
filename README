@@ -1,0 +1,22 @@
+The Enterprise Tablet Visualization application is a sample application built using Adobe Flex and AIR.   The application is not a production application.  It demonstrates realtime data push to a mobile application using LiveCycle Data Services, realtime multimedia collaboration using LiveCycle Collaboration Services, as well as multi-form-factor UI for both tablet and phone devices, including map integration and interactive data visualizations.
+
+You can preview a video of this application in action at:
+http://www.youtube.com/watch?feature=player_embedded&v=zimrDQsmSks
+
+********************************
+
+The backend logic requires LiveCycle Data Services, and is deployed as part of a standard J2EE WAR file.
+http://www.adobe.com/devnet/livecycle/dataservices.html
+
+The front-end client mobile application is built using the SWIZ framework (swiz-framework-v1.3.1.swc):
+http://swizframework.org/
+https://github.com/swiz/swiz-framework/
+
+The client uses the ESRI ArcGIS mapping SDK (agslib-2.4-2011-07-25.swc), available at: http://www2.arcwebservices.com/v2006/index.jsp
+
+The client also uses LiveCycle Collaboration Services for realtime collaboration: http://www.adobe.com/devnet/flashplatform/services/collaboration.html
+
+********************************
+
+You can read more about this at
+http://www.tricedesigns.com/2011/09/28/visualizing-complex-enterprise-data-in-a-tablet-world/

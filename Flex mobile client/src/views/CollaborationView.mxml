@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:View xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				 xmlns:s="library://ns.adobe.com/flex/spark" 
+				 xmlns:cs="http://ns.adobe.com/rtc"
+				 title="Discuss { data.name }" 
+				 currentState="connecting"
+				 creationComplete="creationCompleteHandler(event)">
+	
+	<fx:Script>
+		<![CDATA[
+			import com.adobe.rtc.events.SessionEvent;
+			
+			import mx.events.FlexEvent;
+			
+			
+			protected function session_synchronizationChange(event:SessionEvent):void
+			{
+				if (session.isSynchronized)
+				{
+					currentState = "default";
+					webCam.startWebcam();
+				}
+				else 
+				{
+					currentState = "connecting";
+				}
+			}
+			
+			protected function creationCompleteHandler(event:FlexEvent):void
+			{
+				session.login();
+			}
+			
+			protected function button1_clickHandler(event:MouseEvent):void
+
+			{
+				session.logout();
+
+				navigator.popView()
+
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<cs:AdobeHSAuthenticator id="auth" userName="" password="*****" />
+		<cs:ConnectSession id="session" authenticator="{auth}"
+						   synchronizationChange="session_synchronizationChange(event)"
+						   error="currentState='error'"
+						   roomURL="https://na2.collaboration.adobelivecycle.com/triceam01/TabletDataViz"
+						   />
+	</fx:Declarations>
+	
+	<s:navigationContent>
+		<fx:Array>
+			<s:Button label="Back" click="button1_clickHandler(event)" />
+		</fx:Array>
+	</s:navigationContent>
+	
+	<s:states>
+		<s:State name="default"/>
+		<s:State name="connecting"/>
+		<s:State name="error"/>
+	</s:states>
+	
+	<s:BusyIndicator includeIn="connecting" symbolColor="#000000"
+					 horizontalCenter="0" verticalCenter="0"
+					 width="200" height="200" />
+	
+	
+	<cs:WebCamera id="webCam"
+				  top="0" left="0" right="0" bottom="0" 
+				  includeIn="default" 
+				  connectSession="{session}"/>
+	
+</s:View>

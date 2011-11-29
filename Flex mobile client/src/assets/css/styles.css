@@ -1,0 +1,13 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace local "*";
+@namespace views "views.*";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+@media (os-platform:"IOS")
+{
+	s|ActionBar
+	{
+		defaultButtonAppearance: beveled;
+	}
+}

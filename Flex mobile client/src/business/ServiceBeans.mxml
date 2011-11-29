@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<swiz:BeanProvider xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		xmlns:s="library://ns.adobe.com/flex/spark"
+		xmlns:swiz="http://swiz.swizframework.org" >
+	
+	<fx:Declarations>
+		
+		<s:RemoteObject id="vehiclesService" 
+						destination="enterpriseService" >
+			<s:channelSet>
+				<s:ChannelSet >
+					<s:channels>
+						<s:AMFChannel uri="http://192.168.1.17:8400/enterprise/messagebroker/amf" />
+					</s:channels>
+				</s:ChannelSet>
+			</s:channelSet>
+		</s:RemoteObject>
+		
+		<s:Consumer id="mesagingConsumer"
+					destination="distributionDestination">
+			<s:channelSet>
+				<s:ChannelSet>
+					<s:channels>
+						<s:RTMPChannel uri="rtmp://192.168.1.17:2038" />
+						<s:AMFChannel uri="http://192.168.1.17:8400/enterprise/messagebroker/amf" />
+					</s:channels>
+				</s:ChannelSet>
+			</s:channelSet>
+		</s:Consumer>
+		
+		<swiz:ServiceHelper id="serviceHelper" />
+		
+	</fx:Declarations>
+	
+</swiz:BeanProvider>
